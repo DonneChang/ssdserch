@@ -1,0 +1,7 @@
+aiomqtt
+aiohttp
+bs4
+lxml
+imgkit
+python-telegram-bot
+python-telegram-bot[socks]

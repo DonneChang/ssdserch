@@ -1,0 +1,14 @@
+[BASIC]
+LANGUAGE = "zh-CN,zh;q=0.9"
+COOKIE  = "xxxx"
+SEC_CH_UA = ''
+SEC_FETCH_DEST = "xx"
+SEC_FETCH_MODE = "xx"
+USER_AGENT = "xx"
+
+
+[BOT]
+chat_id = 123
+BOT_TOKEN = "1111"
+proxy_set = "off"
+proxy_info = "socks5://127.0.0.1:10801"
