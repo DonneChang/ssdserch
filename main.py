@@ -77,7 +77,7 @@ async def main():
     app.add_handler(CommandHandler("search", search))
 
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: asyncio.run(auto_check(app)), trigger="interval", minutes=random.randint(1, 2))
+    scheduler.add_job(lambda: asyncio.run(auto_check(app)), trigger="interval", minutes=random.randint(20, 30))
     scheduler.start()
 
     print("Bot 已启动，正在监听...")
