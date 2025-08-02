@@ -1,0 +1,29 @@
+# 自动生成的
+__pycache__
+.venv/
+.DS*
+
+# 相关运行数据
+logs/
+data/
+
+# 隐私信息
+db_file/
+temp_file/
+tempfile/
+session/
+.venv/
+.vscode/
+config.py
+reply_message.py
+dbflag.txt
+config.toml
+# 测试项目
+sessions/
+test*
+*.session*
+*.log
+*.db
+kernel*
+*.png
+*.ipynb
