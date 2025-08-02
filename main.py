@@ -1,4 +1,5 @@
 import asyncio
+import random
 import json, os
 from pathlib import Path
 from libs.log import logger
@@ -57,13 +58,15 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def auto_check(application: Application):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]
-
+    temp_ids = set()   
     for torrent_id, title, link in new_results:
         try:
             await application.bot.send_message(chat_id=chat_id, text=f"{title}\n👉 {link}")
+            temp_ids.add(torrent_id)            
             sent_ids.add(torrent_id)
         except Exception as e:
             print(f"发送失败：{e}")
+    logger.info(f"自动自行搜索任务新增ID： {temp_ids}")
     if new_results:
         save_sent_ids(sent_ids)
 
@@ -74,7 +77,7 @@ async def main():
     app.add_handler(CommandHandler("search", search))
 
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: asyncio.run(auto_check(app)), trigger="interval", minutes=20)
+    scheduler.add_job(lambda: asyncio.run(auto_check(app)), trigger="interval", minutes=random.randint(1, 2))
     scheduler.start()
 
     print("Bot 已启动，正在监听...")
