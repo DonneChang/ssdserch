@@ -3,5 +3,6 @@ aiohttp
 bs4
 lxml
 imgkit
+apscheduler
 python-telegram-bot
 python-telegram-bot[socks]
