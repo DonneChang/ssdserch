@@ -103,7 +103,7 @@ async def fetch_torrents():
                             if 'MB' in td.text or 'GB' in td.text or 'TB' in td.text:
                                 size_gb = parse_size_to_gb(td.text.strip())
                                 break
-                        if not (120 < size_gb < 150):
+                        if not (25 < size_gb < 25.8):
                             continue
 
                     
@@ -138,7 +138,7 @@ async def check_torrents(torrent_id, title, url):
                     if resp.status == 200:
                         soup = BeautifulSoup(await resp.text(), "lxml")
                         button = soup.find("input", attrs={"type": "button", "value": "认领种子"})  
-                        
+
                         if button:
                             re_msg = await claim_torrents(torrent_id)
                             return re_msg

@@ -45,10 +45,10 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("正在查找，请稍候...")
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]  # r[0] 是 torrent_id
-
+    temp_ids = set()
     if new_results:        
         for torrent_id, title, link in new_results[:50]:
-            await asyncio.sleep(30)
+            await asyncio.sleep(random.randint(200, 350))
             re_msag = await check_torrents(torrent_id, title, link)
             if re_msag == "OK":
                 await update.message.reply_text(f"{title}\n👉 {link} 认领成功")
@@ -56,10 +56,12 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 await update.message.reply_text(f"{title}\n👉 {link} 认领失败")
                 logger.info(f"手动搜索任务新增认领失败ID： {link}")
-
-            sent_ids.add(torrent_id)
-            await asyncio.sleep(600)
+            sent_ids.add(temp_ids)
+            sent_ids.add(torrent_id)            
         save_sent_ids(sent_ids)
+        await update.message.reply_text(f"本次手动搜索任务已全部操作完成 :{temp_ids}")
+        logger.info(f"本次手动搜索任务已全部操作完成 :{temp_ids}")
+
 
     else:
         await update.message.reply_text("暂无新种子。")
@@ -68,7 +70,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def auto_check(application: Application):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]
-    temp_ids = set()   
+    temp_ids = set()
     if new_results:        
         for torrent_id, title, link in new_results[:50]:
             await asyncio.sleep(random.randint(200, 350))
@@ -78,9 +80,12 @@ async def auto_check(application: Application):
                 logger.info(f"自动搜索任务新增认领成功ID： {link}")
             else:
                 await application.bot.send_message(f"{title}\n👉 {link} 认领失败")    
-                logger.info(f"自动搜索任务新增认领失败ID： {link}")        
-            sent_ids.add(torrent_id)                       
+                logger.info(f"自动搜索任务新增认领失败ID： {link}")
+            sent_ids.add(temp_ids)        
+            sent_ids.add(torrent_id) 
+        await application.bot.send_message(f"本次自动搜索任务已全部操作完成 :{temp_ids}")                             
         save_sent_ids(sent_ids)   
+    logger.info(f"本次自动搜索任务已全部操作完成 :{temp_ids}") 
     
 
     
