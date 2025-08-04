@@ -13,7 +13,7 @@ from libs.toml import read
 
 BASE_URL = 'https://springsunday.net'
 TORRENTS_URL = f'{BASE_URL}/torrents.php'
-
+CLAIM_URL = f'{BASE_URL}/adopt.php'
 config = read("config/config.toml")
 language = config["BASIC"].get("LANGUAGE", "zh-CN,zh")
 cookie = config["BASIC"].get("COOKIE", "")
@@ -131,3 +131,42 @@ async def fetch_torrents():
         return []
 
     return matched
+
+
+async def check_torrents(torrent_id, title, url):
+
+    try: 
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(10)) as session:
+            async with session.get(CLAIM_URL, headers=headers) as resp:
+                    if resp.status == 200:
+                        soup = BeautifulSoup(await resp.text(), "lxml")
+                        button = soup.find("input", attrs={"type": "button", "value": "认领种子"})
+
+                        if button:
+                            re_msg = await claim_torrents(torrent_id)
+                            return re_msg
+                        else:
+                            return "NG"
+                    return "NG"
+            
+    except Exception as e:
+        logger.exception(f"认领种子出错: {e}")
+        return "NG" 
+
+
+async def claim_torrents(torrent_id):
+    claim_data = {"id": {torrent_id}, "action": 'add'}
+
+    try: 
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(10)) as session:
+            async with session.post(CLAIM_URL, headers=headers, data=claim_data) as resp:
+                    if resp.status == 200:
+                        return "OK"
+                    else:
+                        return "NG"
+
+    except Exception as e:
+        logger.exception(f"认领种子出错: {e}")
+        return e      
+                    
+                    

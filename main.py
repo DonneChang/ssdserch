@@ -6,7 +6,7 @@ from libs.log import logger
 from libs.toml import read
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-from libs.crawler import fetch_torrents
+from libs.crawler import fetch_torrents, check_torrents
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 config = read("config/config.toml")
@@ -46,9 +46,15 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]  # r[0] 是 torrent_id
 
-    if new_results:
+    if new_results:        
         for torrent_id, title, link in new_results[:50]:
-            await update.message.reply_text(f"{title}\n👉 {link}")
+            asyncio.sleep(600)
+            re_msag = await check_torrents(torrent_id, title, link)
+            if re_msag:
+                await update.message.reply_text(f"{title}\n👉 {link} 认领成功")
+            else:
+                await update.message.reply_text(f"{title}\n👉 {link} 认领失败")
+
             sent_ids.add(torrent_id)
         save_sent_ids(sent_ids)
     else:
@@ -59,18 +65,20 @@ async def auto_check(application: Application):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]
     temp_ids = set()   
-    for torrent_id, title, link in new_results:
-        try:
-            await application.bot.send_message(chat_id=chat_id, text=f"{title}\n👉 {link}")
-            temp_ids.add(torrent_id)            
-            sent_ids.add(torrent_id)
-        except Exception as e:
-            print(f"发送失败：{e}")
+    if new_results:        
+        for torrent_id, title, link in new_results[:50]:
+            asyncio.sleep(600)
+            re_msag = await check_torrents(torrent_id, title, link)
+            if re_msag:
+                await application.bot.send_message(f"{title}\n👉 {link} 认领成功")
+            else:
+                await application.bot.send_message(f"{title}\n👉 {link} 认领失败")
+            temp_ids.add(torrent_id) 
+            sent_ids.add(torrent_id)            
+        save_sent_ids(sent_ids)   
     logger.info(f"自动自行搜索任务新增ID： {temp_ids}")
-    if new_results:
-        save_sent_ids(sent_ids)
 
-
+    
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
