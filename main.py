@@ -87,8 +87,6 @@ async def auto_check(application: Application):
         save_sent_ids(sent_ids)   
     logger.info(f"本次自动搜索任务已全部操作完成 :{temp_ids}") 
     
-
-    
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
