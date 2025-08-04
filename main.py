@@ -48,15 +48,19 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if new_results:        
         for torrent_id, title, link in new_results[:50]:
-            asyncio.sleep(600)
+            await asyncio.sleep(30)
             re_msag = await check_torrents(torrent_id, title, link)
-            if re_msag:
+            if re_msag == "OK":
                 await update.message.reply_text(f"{title}\n👉 {link} 认领成功")
+                logger.info(f"手动搜索任务新增认领成功ID： {link}")
             else:
                 await update.message.reply_text(f"{title}\n👉 {link} 认领失败")
+                logger.info(f"手动搜索任务新增认领失败ID： {link}")
 
             sent_ids.add(torrent_id)
+            await asyncio.sleep(600)
         save_sent_ids(sent_ids)
+
     else:
         await update.message.reply_text("暂无新种子。")
 
@@ -67,16 +71,17 @@ async def auto_check(application: Application):
     temp_ids = set()   
     if new_results:        
         for torrent_id, title, link in new_results[:50]:
-            asyncio.sleep(600)
+            await asyncio.sleep(random.randint(200, 350))
             re_msag = await check_torrents(torrent_id, title, link)
             if re_msag:
                 await application.bot.send_message(f"{title}\n👉 {link} 认领成功")
+                logger.info(f"自动搜索任务新增认领成功ID： {link}")
             else:
-                await application.bot.send_message(f"{title}\n👉 {link} 认领失败")
-            temp_ids.add(torrent_id) 
-            sent_ids.add(torrent_id)            
+                await application.bot.send_message(f"{title}\n👉 {link} 认领失败")    
+                logger.info(f"自动搜索任务新增认领失败ID： {link}")        
+            sent_ids.add(torrent_id)                       
         save_sent_ids(sent_ids)   
-    logger.info(f"自动自行搜索任务新增ID： {temp_ids}")
+    
 
     
 async def main():

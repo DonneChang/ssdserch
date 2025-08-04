@@ -109,7 +109,7 @@ async def fetch_torrents():
                     
                     # 图标过滤
                     icon_spans = row.find_all('span', class_='torrent-icon')
-                    skip_titles = {}
+                    skip_titles = {'认领人数已满', '放弃认领'}
                     if any(span.get('title') in skip_titles for span in icon_spans):
                         continue
                     
@@ -125,23 +125,20 @@ async def fetch_torrents():
                     torrent_id = match.group(1)
 
                     matched.append((torrent_id, title, detail_url))
-
     except Exception as e:
         logger.exception(f"抓取种子列表出错: {e}")
         return []
-
     return matched
 
 
 async def check_torrents(torrent_id, title, url):
-
     try: 
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(10)) as session:
-            async with session.get(CLAIM_URL, headers=headers) as resp:
+            async with session.get(url, headers=headers) as resp:
                     if resp.status == 200:
                         soup = BeautifulSoup(await resp.text(), "lxml")
-                        button = soup.find("input", attrs={"type": "button", "value": "认领种子"})
-
+                        button = soup.find("input", attrs={"type": "button", "value": "认领种子"})  
+                        
                         if button:
                             re_msg = await claim_torrents(torrent_id)
                             return re_msg
