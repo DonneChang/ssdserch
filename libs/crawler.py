@@ -73,7 +73,7 @@ async def fetch_torrents():
                 html = await resp.text()
                 soup = BeautifulSoup(html, "lxml")
                 torrents = soup.find_all('tr', class_='sticky_bg')
-
+                logger.info(soup)
                 for row in torrents:
                     # 类型过滤
                     type_td = row.find('td')
