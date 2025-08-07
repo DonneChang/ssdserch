@@ -109,7 +109,7 @@ async def fetch_torrents():
                     # 图标过滤
                     
                     icon_spans = row.find_all('span', class_='torrent-icon')
-                    skip_titles = {'放弃认领', '认领人数已满'}
+                    skip_titles = {'认领人数已满', '放弃认领'}
                     if any(span.get('title') in skip_titles for span in icon_spans):
                         continue
                     
