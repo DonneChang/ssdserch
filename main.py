@@ -1,6 +1,7 @@
 import asyncio
 import random
 import json, os
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from libs.log import logger
 from libs.toml import read
@@ -9,6 +10,8 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 from libs.crawler import fetch_torrents, check_torrents
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+scheduler = AsyncIOScheduler()
+
 config = read("config/config.toml")
 chat_id = config["BOT"].get("chat_id")
 BOT_TOKEN = config["BOT"]["BOT_TOKEN"]
@@ -16,6 +19,8 @@ BOT_TOKEN = config["BOT"]["BOT_TOKEN"]
 
 SENT_IDS_FILE = Path("logs/sent_titles.json")
 SENT_IDS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+app = Application.builder().token(BOT_TOKEN).build()
 
 def load_sent_ids():
     if os.path.exists(SENT_IDS_FILE):
@@ -71,30 +76,45 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def auto_check(application: Application):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]
-    temp_ids = set()    
+    temp_ids = set()   
+    next_time = datetime.now() + timedelta(minutes=random.randint(5,10)) + timedelta(seconds=random.randint(0,59))
     if new_results: 
         for torrent_id, title, link in new_results[:50]:
             await asyncio.sleep(random.randint(180, 300))
             re_msag = await check_torrents(torrent_id, title, link)
             if re_msag:
-                await application.bot.send_message(f"{title}\n👉 {str(link)} 认领成功")
+                await application.bot.send_message(chat_id, f"{title}\n👉 {str(link)} 认领成功")
                 logger.info(f"自动搜索任务新增认领成功ID： {str(link)}")
             else:
-                await application.bot.send_message(f"{title}\n👉 {str(link)} 认领失败")    
+                await application.bot.send_message(chat_id, f"{title}\n👉 {str(link)} 认领失败")    
                 logger.info(f"自动搜索任务新增认领失败ID： {str(link)}")
             temp_ids.add(torrent_id)        
             sent_ids.add(torrent_id) 
         await application.bot.send_message(f"本次自动搜索任务已全部操作完成 :{temp_ids}")                             
         save_sent_ids(sent_ids)   
+    scheduler.add_job(
+        lambda: asyncio.run(auto_check(app)),
+        trigger="date",
+        run_date=next_time, 
+        id="auto_check", 
+        replace_existing=True
+    )
+
     logger.info(f"本次自动搜索任务已全部操作完成 :{temp_ids}") 
     
 async def main():
-    app = Application.builder().token(BOT_TOKEN).build()
+    next_time = datetime.now() + timedelta(minutes=random.randint(6,12))
+    
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("search", search))
-
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: asyncio.run(auto_check(app)), trigger="interval", minutes=random.randint(20, 30))
+    app.add_handler(CommandHandler("search", search))  
+    scheduler.add_job(
+        lambda: asyncio.run(auto_check(app)),
+        trigger="date",
+        run_date=next_time, 
+        id="auto_check", 
+        replace_existing=True
+    )
+    
     scheduler.start()
 
     print("Bot 已启动，正在监听...")

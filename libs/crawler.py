@@ -165,5 +165,3 @@ async def claim_torrents(torrent_id):
     except Exception as e:
         logger.exception(f"认领种子出错: {e}")
         return e      
-                    
-                    
