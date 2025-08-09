@@ -54,7 +54,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if new_results: 
         await update.message.reply_text(f"已检索到符合要求可认领种子 准备开始认领……")         
         for torrent_id, title, link in new_results[:50]:
-            await asyncio.sleep(random.randint(200, 350))
+            await asyncio.sleep(random.randint(120, 160))
             re_msag = await check_torrents(torrent_id, title, link)
             if re_msag == "OK":
                 await update.message.reply_text(f"{title}\n👉 {str(link)} 认领成功")
@@ -80,7 +80,7 @@ async def auto_check(application: Application):
     next_time = datetime.now() + timedelta(minutes=random.randint(20,30)) + timedelta(seconds=random.randint(0,59))
     if new_results: 
         for torrent_id, title, link in new_results[:50]:
-            await asyncio.sleep(random.randint(60, 180))
+            await asyncio.sleep(random.randint(120, 160))
             re_msag = await check_torrents(torrent_id, title, link)
             if re_msag:
                 await application.bot.send_message(chat_id, f"{title}\n👉 {str(link)} 认领成功")
