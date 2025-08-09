@@ -77,10 +77,10 @@ async def auto_check(application: Application):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]
     temp_ids = set()   
-    next_time = datetime.now() + timedelta(minutes=random.randint(5,10)) + timedelta(seconds=random.randint(0,59))
+    next_time = datetime.now() + timedelta(minutes=random.randint(20,30)) + timedelta(seconds=random.randint(0,59))
     if new_results: 
         for torrent_id, title, link in new_results[:50]:
-            await asyncio.sleep(random.randint(180, 300))
+            await asyncio.sleep(random.randint(60, 180))
             re_msag = await check_torrents(torrent_id, title, link)
             if re_msag:
                 await application.bot.send_message(chat_id, f"{title}\n👉 {str(link)} 认领成功")

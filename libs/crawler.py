@@ -87,9 +87,9 @@ async def fetch_torrents():
                         if not tag_div:
                             continue
                         tag_text = tag_div.get_text()
-                        if '官方' not in tag_text or '原生' not in tag_text:
+                        if not ('官方' in tag_text and ('原生' in tag_text or 'DIY' in tag_text)):
                             continue
-                    
+
                     elif img.get('alt') == 'TV Series(剧集)':
                         tag_div = row.find('div', class_='torrent-smalldescr')
                         if not tag_div:
@@ -109,7 +109,7 @@ async def fetch_torrents():
                     # 图标过滤
                     
                     icon_spans = row.find_all('span', class_='torrent-icon')
-                    skip_titles = {'认领人数已满', '放弃认领'}
+                    skip_titles = {}
                     if any(span.get('title') in skip_titles for span in icon_spans):
                         continue
                     
