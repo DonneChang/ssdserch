@@ -103,7 +103,7 @@ async def fetch_torrents():
                             if 'MB' in td.text or 'GB' in td.text or 'TB' in td.text:
                                 size_gb = parse_size_to_gb(td.text.strip())
                                 break
-                        if not (120 < size_gb < 150):
+                        if not (120 < size_gb < 300):
                             continue
 
                     # 图标过滤
