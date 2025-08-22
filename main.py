@@ -77,7 +77,7 @@ async def auto_check(application: Application):
     results = await fetch_torrents()
     new_results = [r for r in results if r[0] not in sent_ids]
     temp_ids = set()   
-    next_time = datetime.now() + timedelta(minutes=random.randint(20,30)) + timedelta(seconds=random.randint(0,59))
+    next_time = datetime.now() + timedelta(minutes=random.randint(30,50)) + timedelta(seconds=random.randint(1,58))
     if new_results: 
         for torrent_id, title, link in new_results[:50]:
             await asyncio.sleep(random.randint(120, 160))
@@ -90,15 +90,17 @@ async def auto_check(application: Application):
                 logger.info(f"自动搜索任务新增认领失败ID： {str(link)}")
             temp_ids.add(torrent_id)        
             sent_ids.add(torrent_id) 
-        await application.bot.send_message(f"本次自动搜索任务已全部操作完成 :{temp_ids}")                             
-        save_sent_ids(sent_ids)   
+        await application.bot.send_message(chat_id, f"本次自动搜索任务已全部操作完成 :{temp_ids}")                             
+        save_sent_ids(sent_ids) 
+        
     scheduler.add_job(
-        lambda: asyncio.run(auto_check(app)),
+        auto_check,    
         trigger="date",
         run_date=next_time, 
-        id="auto_check", 
-        replace_existing=True
-    )
+        args=[app],   
+        id="auto_check",  
+        replace_existing=True            
+    ) 
 
     logger.info(f"本次自动搜索任务已全部操作完成 :{temp_ids}") 
     
